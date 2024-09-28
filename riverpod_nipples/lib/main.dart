@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final nameProvider = Provider<String>(
-  (ref) {
-    return "Hello Nurujjaman";
-  },
+final countProvider = StateProvider<int>(
+  (ref) => 0,
 );
 
 void main() {
@@ -23,21 +21,46 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
+      debugShowCheckedModeBanner: false,
       home: const HomePage(),
     );
   }
 }
 
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final name = ref.watch(nameProvider);
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  @override
+  Widget build(BuildContext context) {
+    final name = ref.watch(countProvider);
+    ref.listen(countProvider, ((p, n) {
+      if (n == 5) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("the value is $name")));
+      }
+    }));
     return Scaffold(
       appBar: AppBar(
-        title: Text(name),
+        actions: [
+          IconButton(
+              onPressed: () {
+                ref.refresh(countProvider);
+              },
+              icon: Icon(Icons.refresh))
+        ],
       ),
+      body: Center(
+        child: Text(name.toString()),
+      ),
+      floatingActionButton: FloatingActionButton(onPressed: () {
+        //ref.read(countProvider.notifier).state++;
+        ref.read(countProvider.notifier).update((state) => state + 1);
+      }),
     );
   }
 }
