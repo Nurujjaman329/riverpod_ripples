@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_nipples/counter_demo.dart';
 
-final countProvider = StateProvider<int>(
-  (ref) => 0,
+final countProvider = StateNotifierProvider<CounterDemo, int>(
+  (ref) => CounterDemo(),
 );
 
 void main() {
@@ -37,13 +38,13 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
-    final name = ref.watch(countProvider);
-    ref.listen(countProvider, ((p, n) {
+    final counter = ref.watch(countProvider);
+    ref.listen<int>(countProvider, (p, n) {
       if (n == 5) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("the value is $name")));
+            .showSnackBar(SnackBar(content: Text("the value is $n")));
       }
-    }));
+    });
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -55,11 +56,10 @@ class _HomePageState extends ConsumerState<HomePage> {
         ],
       ),
       body: Center(
-        child: Text(name.toString()),
+        child: Text(counter.toString()),
       ),
       floatingActionButton: FloatingActionButton(onPressed: () {
-        //ref.read(countProvider.notifier).state++;
-        ref.read(countProvider.notifier).update((state) => state + 1);
+        ref.read(countProvider.notifier).increment();
       }),
     );
   }
