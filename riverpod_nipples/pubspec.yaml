@@ -38,6 +38,7 @@ dependencies:
   riverpod: ^2.5.1
   flutter_riverpod: ^2.5.1
   hooks_riverpod: ^2.5.2
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:
