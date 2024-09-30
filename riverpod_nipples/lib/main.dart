@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_nipples/counter_demo.dart';
+import 'package:riverpod_nipples/api_services.dart';
+import 'package:riverpod_nipples/user_model.dart';
 
-final countProvider = StateNotifierProvider<CounterDemo, int>(
-  (ref) => CounterDemo(),
+final apiProvider = Provider<ApiService>(
+  (ref) => ApiService(),
 );
+
+final userProvider = FutureProvider<List<UserModel>>((ref) {
+  return ref.read(apiProvider).getUser();
+});
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -28,39 +33,32 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomePage extends ConsumerStatefulWidget {
+class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
-  ConsumerState<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends ConsumerState<HomePage> {
-  @override
-  Widget build(BuildContext context) {
-    final counter = ref.watch(countProvider);
-    ref.listen<int>(countProvider, (p, n) {
-      if (n == 5) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("the value is $n")));
-      }
-    });
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userData = ref.watch(userProvider);
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          IconButton(
-              onPressed: () {
-                ref.refresh(countProvider);
-              },
-              icon: Icon(Icons.refresh))
-        ],
-      ),
-      body: Center(
-        child: Text(counter.toString()),
-      ),
-      floatingActionButton: FloatingActionButton(onPressed: () {
-        ref.read(countProvider.notifier).increment();
-      }),
+      appBar: AppBar(),
+      body: userData.when(
+          data: (data) {
+            return ListView.builder(
+                itemCount: data.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(data[index].first_name.toString()),
+                    subtitle: Text(data[index].email.toString()),
+                    leading: Image.network(data[index].avatar),
+                  );
+                });
+          },
+          error: ((error, stackTrace) => Text(error.toString())),
+          loading: (() {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          })),
     );
   }
 }
