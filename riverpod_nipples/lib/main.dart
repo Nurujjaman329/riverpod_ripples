@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_nipples/api_services.dart';
 import 'package:riverpod_nipples/user_model.dart';
 
+final streamProvider = StreamProvider<int>(((ref) {
+  return Stream.periodic(Duration(seconds: 2), (()));
+}));
+
 final apiProvider = Provider<ApiService>(
   (ref) => ApiService(),
 );
