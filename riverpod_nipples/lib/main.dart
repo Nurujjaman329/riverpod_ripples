@@ -1,19 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_nipples/api_services.dart';
-import 'package:riverpod_nipples/user_model.dart';
-
-final streamProvider = StreamProvider<int>(((ref) {
-  return Stream.periodic(Duration(seconds: 2), (()));
-}));
-
-final apiProvider = Provider<ApiService>(
-  (ref) => ApiService(),
-);
-
-final userProvider = FutureProvider<List<UserModel>>((ref) {
-  return ref.read(apiProvider).getUser();
-});
+import 'package:go_router/go_router.dart';
+import 'package:riverpod_nipples/counter_screen.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -25,44 +13,46 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: const HomePage(),
+      routerConfig: _router,
     );
   }
 }
+
+final GoRouter _router = GoRouter(routes: [
+  GoRoute(
+    path: "/",
+    builder: (context, state) => const HomePage(),
+  ),
+  GoRoute(
+    path: "/counter",
+    builder: (context, state) => const CounterScreen(),
+  ),
+]);
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userData = ref.watch(userProvider);
     return Scaffold(
       appBar: AppBar(),
-      body: userData.when(
-          data: (data) {
-            return ListView.builder(
-                itemCount: data.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(data[index].first_name.toString()),
-                    subtitle: Text(data[index].email.toString()),
-                    leading: Image.network(data[index].avatar),
-                  );
-                });
-          },
-          error: ((error, stackTrace) => Text(error.toString())),
-          loading: (() {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          })),
+      body: Center(
+        child: TextButton(
+            onPressed: () {
+              context.push("/counter");
+            },
+            child: Text(
+              'Counter',
+              style: TextStyle(fontSize: 15),
+            )),
+      ),
     );
   }
 }
